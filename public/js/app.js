@@ -1,6 +1,6 @@
 import { load, bus, commit, S } from './store.js';
-import { NODES, itemById, byId, activeNodes, overall, todayStr } from './model.js';
-import { processDays, setFocus } from './plan.js';
+import { NODES, itemById, byId, activeNodes, overall, todayStr, addDays } from './model.js';
+import { processDays, setFocus, setStartDate } from './plan.js';
 import { renderMeter, escapeHtml as h } from './honor.js';
 import { initGraph, refresh as refreshGraph, focusNode, expand, select, zoomBy, fit } from './graph.js';
 import { initDrawer, openDrawer, closeDrawer, render as renderDrawer, openNodeId } from './drawer.js';
@@ -150,6 +150,25 @@ function watchDayChange() {
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && check());
 }
 
+/** First launch only: ask when the honor challenge should start. */
+function showOnboarding() {
+  const el = document.getElementById('onboard');
+  const date = document.getElementById('onboard-date');
+  const today = todayStr();
+  date.min = today;
+  date.value = addDays(today, 7);
+  date.addEventListener('focus', () => (el.querySelector('input[value="pick"]').checked = true));
+  el.hidden = false;
+  document.getElementById('onboard-go').addEventListener('click', () => {
+    const choice = el.querySelector('input[name="start"]:checked').value;
+    const start = choice === 'today' ? today : choice === 'pick' && date.value ? date.value : addDays(today, 1);
+    S.settings.onboarded = true;
+    setStartDate(start); // also commits
+    el.classList.add('closing');
+    setTimeout(() => (el.hidden = true), 250);
+  }, { once: true });
+}
+
 async function main() {
   if (innerWidth < 900) document.body.classList.add('side-collapsed');
   await load();
@@ -166,6 +185,7 @@ async function main() {
   watchDayChange();
   continueHere();
   document.body.classList.add('ready');
+  if (!S.settings.onboarded) showOnboarding();
 
   if (rolled && rolled.delta < 0) {
     document.getElementById('welcome').innerHTML = `While you were away (${rolled.days} day${rolled.days > 1 ? 's' : ''}), your honor changed by <b>${rolled.delta.toFixed(1)}</b>. Today's plan is ready.`;

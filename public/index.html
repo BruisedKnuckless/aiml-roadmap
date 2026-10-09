@@ -124,6 +124,21 @@
   <div id="toasts" aria-live="polite"></div>
   <div id="welcome" class="welcome" hidden></div>
 
+  <div id="onboard" hidden>
+    <div class="onboard-card" role="dialog" aria-modal="true" aria-labelledby="onboard-title">
+      <div class="kicker">Welcome to The Long Road</div>
+      <h2 id="onboard-title">When do you want to start?</h2>
+      <p class="muted">Each day you get a short plan of study tasks. Finish them and your honor rises; skip days and it falls. Before your start date, days are warm-ups: tasks are optional and nothing costs honor.</p>
+      <div class="onboard-options" role="radiogroup">
+        <label class="onboard-option"><input type="radio" name="start" value="today"><span><b>Today</b><small>Today's tasks count right away.</small></span></label>
+        <label class="onboard-option"><input type="radio" name="start" value="tomorrow" checked><span><b>Tomorrow <em>Recommended</em></b><small>Use today to look around and settle in.</small></span></label>
+        <label class="onboard-option"><input type="radio" name="start" value="pick"><span><b>Pick a date</b><small><input type="date" id="onboard-date"></small></span></label>
+      </div>
+      <button class="btn primary onboard-go" id="onboard-go">Start the journey</button>
+      <p class="onboard-foot">You can change this anytime in <b>Settings → Challenge start</b>.</p>
+    </div>
+  </div>
+
   <div id="palette" hidden>
     <div class="palette-card">
       <input placeholder="Search nodes, tasks, resources…" autocomplete="off" spellcheck="false">

@@ -8,7 +8,7 @@ export function defaultState() {
   return {
     version: 1,
     createdAt: new Date().toISOString(),
-    settings: { dailyHours: 5, restDays: [], minTasks: 2, theme: 'auto' },
+    settings: { dailyHours: 5, restDays: [], minTasks: 2, theme: 'auto', onboarded: false },
     honor: { value: 50, history: [] },
     awards: {}, // key -> honor delta that was granted, so it can be reversed exactly
     checklist: {}, // itemId -> ISO timestamp completed
@@ -21,6 +21,8 @@ export function defaultState() {
 
 function migrate(s) {
   const d = defaultState();
+  // Progress files from before the welcome screen existed belong to people who already started.
+  if (s.settings && s.settings.onboarded == null) s.settings.onboarded = true;
   for (const k of Object.keys(d)) if (s[k] == null) s[k] = d[k];
   s.settings = { ...d.settings, ...s.settings };
   s.streak = { ...d.streak, ...s.streak };
