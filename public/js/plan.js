@@ -18,7 +18,34 @@ export const isWarmup = (date) => !!S.settings.startDate && date < S.settings.st
 
 function makeWarmup(day) {
   day.warmup = true;
-  for (const t of day.tasks) t.extra = true;
+  for (const t of day.tasks) {
+    if (!t.extra) {
+      t.extra = true;
+      t.warmupExtra = true; // remember which tasks were made optional, so a start-date change can undo it
+    }
+  }
+}
+
+function endWarmup(day) {
+  day.warmup = false;
+  for (const t of day.tasks) {
+    if (t.warmupExtra) {
+      delete t.extra;
+      delete t.warmupExtra;
+    }
+  }
+}
+
+/** Move the challenge start. Today or later only — past days were never planned, so they can't be judged. */
+export function setStartDate(date) {
+  const today = todayStr();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  S.settings.startDate = date < today ? today : date;
+  const day = ensurePlan(today);
+  if (isWarmup(today)) makeWarmup(day);
+  else if (day.warmup) endWarmup(day);
+  checkDayGoals();
+  commit();
 }
 export const taskDone = (t) => (t.kind === 'checklist' ? isItemDone(t.ref) : !!t.done);
 

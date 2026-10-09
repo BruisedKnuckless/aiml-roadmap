@@ -326,6 +326,11 @@ input[type="checkbox"]:checked::after { content: ''; width: 8px; height: 4px; bo
 .setting-row { display: flex; align-items: center; gap: 12px; }
 .setting-row b { font-variant-numeric: tabular-nums; font-weight: 600; }
 .setting-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+.setting-row input[type="date"] {
+  flex: 1; background: var(--fill-2); border: 1px solid transparent; border-radius: 10px; padding: 7px 10px;
+  color: var(--text); font: 400 14px var(--font); outline: none; color-scheme: inherit;
+}
+.setting-row input[type="date"]:focus { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 .weekdays button { font-size: 12px; padding: 6px 0; }
 
 /* ── graph ── */

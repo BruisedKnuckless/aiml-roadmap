@@ -1,7 +1,7 @@
 // Left sidebar: Today (to-dos), Path (progress by phase), Stats (honor & activity), Settings.
 import { S, commit, exportJSON, replaceState, defaultState } from './store.js';
 import { NODES, PHASES, byId, overall, phaseProgress, nodeStatus, todayStr, addDays, dateStr, prettyDate, fmtHours, weekday } from './model.js';
-import { ensurePlan, minimumFor, taskDone, taskLabel, taskHours, toggleTask, addCustom, removeTask, pullNext, rebuildToday, completeProject, processDays } from './plan.js';
+import { ensurePlan, setStartDate, minimumFor, taskDone, taskLabel, taskHours, toggleTask, addCustom, removeTask, pullNext, rebuildToday, completeProject, processDays } from './plan.js';
 import { RULES, rankOf, escapeHtml as h } from './honor.js';
 
 let tab = 'today';
@@ -174,13 +174,20 @@ const VIEWS = {
       <h4>Appearance</h4>
       <div class="segmented" role="radiogroup">${['auto', 'light', 'dark'].map((t) => `<button class="${(S.settings.theme || 'auto') === t ? 'on' : ''}" data-theme-set="${t}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div>
       <p class="muted">Auto follows your Mac's Light/Dark setting.</p>
+      <h4>Challenge start</h4>
+      <div class="setting-row start-row">
+        <input type="date" data-setting="startDate" value="${S.settings.startDate}" min="${todayStr()}">
+        ${S.settings.startDate !== todayStr() ? '<button class="btn small" data-act="start-today">Start today</button>' : ''}
+      </div>
+      <p class="muted">${S.settings.startDate > todayStr()
+        ? `The honor challenge starts <b>${prettyDate(S.settings.startDate)}</b>. Until then every day is a warm-up: tasks are optional and nothing costs honor, but finished tasks still earn it.`
+        : `The challenge is on${S.settings.startDate === todayStr() ? ' from today' : ` since <b>${prettyDate(S.settings.startDate)}</b>`}. Pick a future date to postpone it, e.g. before a busy week. Days before the new date become warm-up days.`}</p>
       <h4>Daily study goal</h4>
       <div class="setting-row">
         <input type="range" min="1" max="10" step="0.5" value="${S.settings.dailyHours}" data-setting="dailyHours">
         <b id="hours-out">${S.settings.dailyHours}h / day</b>
       </div>
       <p class="muted">Sets how much work is auto-assigned each day. Applies from tomorrow's plan (or press "Rebuild plan").</p>
-      <p class="muted">Honor challenge ${S.settings.startDate > todayStr() ? 'starts' : 'started'} <b>${prettyDate(S.settings.startDate, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</b>.</p>
       <h4>Daily minimum</h4>
       <div class="setting-row">
         <input type="range" min="1" max="5" step="1" value="${S.settings.minTasks}" data-setting="minTasks">
@@ -272,6 +279,7 @@ export function initPanels(opts) {
     if (act === 'pull') pullNext();
     if (act === 'rebuild') rebuildToday();
     if (act === 'export') exportJSON();
+    if (act === 'start-today') setStartDate(todayStr());
     if (act === 'reset' && confirm('Reset ALL progress, notes and honor back to 50? A backup of today stays in data/backups/.') && confirm('Really reset? This cannot be undone from the app.')) {
       replaceState(defaultState());
       processDays();
@@ -281,6 +289,15 @@ export function initPanels(opts) {
   r.addEventListener('change', (e) => {
     const t = e.target;
     if (t.dataset.task) return toggleTask(t.dataset.task);
+    if (t.dataset.setting === 'startDate') {
+      if (!t.value) return;
+      const today = todayStr();
+      if (t.value > today && S.settings.startDate <= today && !confirm(`Postpone the challenge to ${prettyDate(t.value)}? Until then, days are warm-ups with no penalties.`)) {
+        t.value = S.settings.startDate;
+        return;
+      }
+      return setStartDate(t.value);
+    }
     if (t.dataset.setting === 'dailyHours' || t.dataset.setting === 'minTasks') {
       S.settings[t.dataset.setting] = Number(t.value);
       return commit();
