@@ -1,0 +1,10 @@
+{
+  "name": "aiml-roadmap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive AI/ML zero-to-master roadmap with an honor meter",
+  "scripts": {
+    "start": "node server.js",
+    "check-links": "node scripts/check-links.js"
+  }
+}
