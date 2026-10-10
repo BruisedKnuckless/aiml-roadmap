@@ -1,6 +1,6 @@
 // Right-side drawer with full node details.
 import { S } from './store.js';
-import { byId, children, PHASES, nodeStatus, nodeProgress, isItemDone, fmtHours, todayStr } from './model.js';
+import { NODES, byId, children, PHASES, nodeStatus, nodeProgress, isItemDone, fmtHours, todayStr, prettyDate } from './model.js';
 import { toggleItem, addItemToToday, setFocus, setNotes, ensurePlan } from './plan.js';
 import { escapeHtml as h } from './honor.js';
 
@@ -68,6 +68,44 @@ const resourceItem = (r) => `
     <span class="res-text"><span class="res-title">${h(r.title)}</span>
     <span class="res-meta">${r.type}${r.note ? ` · ${h(r.note)}` : ''} · ${h(new URL(r.url).hostname.replace('www.', ''))}</span></span>
     <span class="res-go">↗</span></a></li>`;
+
+// ── notes export ──
+/** File-safe version of a node title, e.g. "Python: OOP, Testing & Packaging" → "Python - OOP, Testing & Packaging". */
+const fileName = (title) => title.replace(/[\\/:*?"<>|]+/g, ' - ').replace(/\s+/g, ' ').trim();
+
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: `${type};charset=utf-8` }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function noteText(n) {
+  // Prefer the live textarea so text typed in the last moment (before autosave) is included.
+  const live = document.querySelector(`textarea[data-notes="${n.id}"]`);
+  return (live ? live.value : S.nodes[n.id]?.notes ?? '').trim();
+}
+
+function exportNotes(kind) {
+  const exported = prettyDate(todayStr(), { year: 'numeric', month: 'long', day: 'numeric' });
+  const msg = el().querySelector('.notes-export-msg');
+  const say = (text) => { msg.textContent = text; msg.hidden = false; };
+  if (kind === 'all') {
+    const withNotes = NODES.filter((n) => noteText(n));
+    if (!withNotes.length) return say('No notes yet — write some first.');
+    const body = withNotes.map((n) => `## ${n.title}\n\n*Phase ${n.phase} · ${PHASES[n.phase].title}*\n\n${noteText(n)}\n`).join('\n---\n\n');
+    download(`All notes ${todayStr()}.md`, `# My study notes\n\nExported ${exported} · ${withNotes.length} node${withNotes.length > 1 ? 's' : ''}\n\n---\n\n${body}`, 'text/markdown');
+    return say(`Exported notes from ${withNotes.length} node${withNotes.length > 1 ? 's' : ''}.`);
+  }
+  const n = byId[current];
+  const text = noteText(n);
+  if (!text) return say('No notes for this node yet.');
+  const phase = `Phase ${n.phase} · ${PHASES[n.phase].title}`;
+  if (kind === 'md') download(`${fileName(n.title)}.md`, `# ${n.title}\n\n*${phase} · exported ${exported}*\n\n${text}\n`, 'text/markdown');
+  else download(`${fileName(n.title)}.txt`, `${n.title}\n${'='.repeat(n.title.length)}\n${phase} · exported ${exported}\n\n${text}\n`, 'text/plain');
+  say(`Saved as "${fileName(n.title)}.${kind}" to your Downloads folder.`);
+}
 
 const nodeLink = (id) => `<button class="link-chip status-${nodeStatus(byId[id])}" data-goto="${id}">${h(byId[id].title)}</button>`;
 
@@ -137,7 +175,14 @@ const BODY = {
 
   notes: (n) => `
     <p class="muted">Your notes for this node. Saved automatically to your progress file.</p>
-    <textarea class="notes" data-notes="${n.id}" placeholder="Key ideas, links, questions, mistakes you made…">${h(S.nodes[n.id]?.notes ?? '')}</textarea>`,
+    <textarea class="notes" data-notes="${n.id}" placeholder="Key ideas, links, questions, mistakes you made…">${h(S.nodes[n.id]?.notes ?? '')}</textarea>
+    <div class="notes-export">
+      <span class="muted">Export as</span>
+      <button class="btn small" data-export="md">Markdown (.md)</button>
+      <button class="btn small" data-export="txt">Text (.txt)</button>
+      <button class="btn small ghost" data-export="all">All notes (.md)</button>
+    </div>
+    <p class="notes-export-msg muted" hidden></p>`,
 };
 
 export function initDrawer(opts) {
@@ -155,6 +200,8 @@ export function initDrawer(opts) {
     }
     const go = t.closest('[data-goto]');
     if (go) return hooks.onGoto(go.dataset.goto);
+    const ex = t.closest('[data-export]');
+    if (ex) return exportNotes(ex.dataset.export);
     const td = t.closest('[data-today]');
     if (td) return addItemToToday(td.dataset.today);
     if (t.closest('[data-act="focus"]')) return setFocus(current);

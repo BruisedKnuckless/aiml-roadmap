@@ -1,0 +1,5 @@
+# Personal progress, notes and backups stay on each person's own machine
+/data/
+node_modules/
+.DS_Store
+*.tmp

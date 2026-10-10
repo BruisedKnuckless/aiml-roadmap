@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 72 72" width="256" height="256">
+  <title>Honorable: coder at a laptop — The Long Road honor badge (original art, RDR2-inspired)</title>
+  <defs>
+    <filter id="rdr-rough" x="-10%" y="-30%" width="120%" height="160%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+    <filter id="rdr-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="3" result="g"/>
+          <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.25" result="mask"/>
+          <feComposite in="SourceGraphic" in2="mask" operator="in"/>
+        </filter>
+    <clipPath id="badge"><circle cx="32" cy="32" r="31"/></clipPath>
+  </defs>
+  <circle cx="32" cy="32" r="34" fill="#0a0a0a" filter="url(#rdr-rough)"/>
+  <g clip-path="url(#badge)">
+              <!-- Honorable: a coder in a hoodie behind a laptop -->
+              <g filter="url(#rdr-grain)" fill="#e2e2df">
+                <path d="M20.5 24c0-11 5-17 11.5-17s11.5 6 11.5 17c0 5-2 8.5-5 10h-13c-3-1.5-5-5-5-10z"/>
+                <path d="M9 56c1-11.5 8-17.5 16-19l7 3.5 7-3.5c8 1.5 15 7.5 16 19z"/>
+              </g>
+              <g fill="#0b0b0b">
+                <ellipse cx="32" cy="22.5" rx="8.6" ry="10"/>
+              </g>
+              <g filter="url(#rdr-grain)" fill="#e2e2df">
+                <ellipse cx="32" cy="23.5" rx="7" ry="8.3"/>
+              </g>
+              <g fill="#0b0b0b">
+                <rect x="25.6" y="20.4" width="5.4" height="3.6" rx="1.2"/>
+                <rect x="33" y="20.4" width="5.4" height="3.6" rx="1.2"/>
+                <rect x="30.6" y="21.4" width="2.8" height="1"/>
+                <path d="M29.6 38.5v6M34.4 38.5v6" stroke="#0b0b0b" stroke-width="1.2"/>
+                <rect x="12.5" y="38.5" width="39" height="19" rx="2.5"/>
+                <rect x="7.5" y="56.8" width="49" height="5.6" rx="2"/>
+              </g>
+              <g filter="url(#rdr-grain)" fill="#e2e2df">
+                <rect x="14.5" y="40.5" width="35" height="15" rx="1.5"/>
+                <rect x="9" y="58.2" width="46" height="2.8" rx="1.2"/>
+              </g>
+              <g fill="none" stroke="#0b0b0b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M26.8 44.8 23.4 48l3.4 3.2M37.2 44.8l3.4 3.2-3.4 3.2M33.4 43.8l-2.8 8.4"/>
+              </g>
+            </g>
+</svg>
